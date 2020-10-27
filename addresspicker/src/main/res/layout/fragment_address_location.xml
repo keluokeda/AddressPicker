@@ -27,13 +27,12 @@
         android:paddingTop="8dp"
         android:paddingEnd="16dp"
         android:paddingBottom="8dp"
+        android:textColor="#505050"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:textColor="@color/grey_cc"
-        tools:text="广东省东莞市"
-        />
+        tools:text="广东省东莞市" />
 
     <TextView
         android:id="@+id/name"
