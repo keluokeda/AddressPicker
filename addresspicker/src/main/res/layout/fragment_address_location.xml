@@ -34,6 +34,7 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:text="广东省东莞市" />
 
+
     <TextView
         android:id="@+id/name"
         android:layout_width="match_parent"
