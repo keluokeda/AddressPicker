@@ -187,6 +187,8 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
             ) {
 
                 val addressName = result.regeocodeAddress.formatAddress
+                    .replace(result.regeocodeAddress.province, "")
+                    .replace(result.regeocodeAddress.city, "")
 
 
                 val lat = result.regeocodeQuery.point.latitude
