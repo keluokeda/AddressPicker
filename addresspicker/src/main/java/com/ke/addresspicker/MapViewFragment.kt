@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,25 +21,27 @@ import com.amap.api.services.geocoder.GeocodeResult
 import com.amap.api.services.geocoder.GeocodeSearch
 import com.amap.api.services.geocoder.RegeocodeQuery
 import com.amap.api.services.geocoder.RegeocodeResult
-import kotlinx.android.synthetic.main.fragment_map_view.*
+import com.hi.dhl.binding.viewbind
+import com.ke.addresspicker.databinding.AddressPickerFragmentMapViewBinding
 
 
-class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearchListener,
+internal class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearchListener,
     AMapLocationListener, AMap.OnCameraChangeListener {
+
+
+    private val binding:AddressPickerFragmentMapViewBinding by viewbind()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map_view, container, false)
+    ): View {
+       return binding.root
     }
 
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        toolbar?.apply {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.toolbar.apply {
             title = "设置地址"
             inflateMenu(R.menu.search)
             setNavigationIcon(R.drawable.baseline_clear_black_24dp)
@@ -58,41 +59,39 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
 
         initMapView(savedInstanceState)
 
-        done.setOnClickListener {
+        binding.done.setOnClickListener {
             activity?.apply {
-//                Log.d("TAG","latlng = $currentLatLng name = ${address.text}")
                 if (currentLatLng != null) {
                     val intent = Intent()
                     intent.putExtra(HostActivity.key_latitude, currentLatLng!!.latitude)
                     intent.putExtra(HostActivity.key_longitude, currentLatLng!!.longitude)
-                    intent.putExtra(HostActivity.key_address, address.text.toString())
+                    intent.putExtra(HostActivity.key_address, binding.address.text.toString())
                     setResult(Activity.RESULT_OK, intent)
                     finish()
 
                 }
             }
         }
-
-
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        map_view?.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
     }
 
 
     override fun onResume() {
         super.onResume()
 
-        map_view?.onResume()
+        binding.mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
 
-        map_view?.onPause()
+        binding.mapView.onPause()
     }
 
     override fun onDestroy() {
@@ -101,7 +100,7 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
         locationClient?.stopLocation()
         locationClient?.onDestroy()
 
-        map_view?.onDestroy()
+        binding.mapView.onDestroy()
 
 
     }
@@ -118,9 +117,9 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
 
     private fun initMapView(bundle: Bundle?) {
 
-        map_view.onCreate(bundle)
+        binding.mapView.onCreate(bundle)
         mGeocodeSearch = GeocodeSearch(activity)
-        mAMap = map_view.map
+        mAMap = binding.mapView.map
 
         mAMap.setLocationSource(this)
 
@@ -196,11 +195,11 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
 
                 this.location = LatLng(lat, lon)
 
-                address.text = addressName
+                binding.address.text = addressName
 
 
 
-                done.isEnabled = true
+                binding.done.isEnabled = true
                 if (currentLatLng != null) {
                     setMarket(currentLatLng!!)
                 }
@@ -214,9 +213,9 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
         mGPSMarker?.remove()
 
 
-        val width = map_view.width / 2
+        val width = binding.mapView.width / 2
 
-        val height = map_view.height / 2
+        val height = binding.mapView.height / 2
 
         val markOptions = MarkerOptions()
         markOptions.draggable(true)//设置Marker可拖动
@@ -236,7 +235,7 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
         //        mGPSMarker.setSnippet(content);
         //设置像素坐标
         mGPSMarker?.setPositionByPixels(width, height)
-        map_view.invalidate()
+        binding.mapView.invalidate()
     }
 
 
@@ -254,10 +253,10 @@ class MapViewFragment : Fragment(), LocationSource, GeocodeSearch.OnGeocodeSearc
         if (onLocationChangedListener != null && aMapLocation != null) {
             if (aMapLocation.errorCode == 0) {
                 onLocationChangedListener?.onLocationChanged(aMapLocation)// 显示系统箭头
-                address.text = aMapLocation.address
+                binding.address.text = aMapLocation.address
 
                 //定位成功后 提交按钮才可以点击
-                done.isEnabled = true
+                binding.done.isEnabled = true
 
                 location = LatLng(aMapLocation.latitude, aMapLocation.longitude)
 

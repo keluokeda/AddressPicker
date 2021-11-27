@@ -11,7 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.MainThread
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.services.core.AMapException
@@ -20,12 +22,15 @@ import com.amap.api.services.help.Inputtips
 import com.amap.api.services.help.InputtipsQuery
 import com.amap.api.services.help.Tip
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.BaseViewHolder
-import com.jakewharton.rxbinding3.widget.textChanges
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import kotlinx.android.synthetic.main.fragment_search.*
+import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import com.hi.dhl.binding.viewbind
+import com.ke.addresspicker.databinding.AddressPickerFragmentSearchBinding
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
+
 import java.util.concurrent.TimeUnit
 
 
@@ -42,11 +47,16 @@ class SearchFragment : Fragment(), Inputtips.InputtipsListener {
 
     private var currentPoint: LatLonPoint? = null
 
-    private val compositeDisposable = CompositeDisposable()
+
+    private val binding: AddressPickerFragmentSearchBinding by viewbind()
+
+    private val textStateFlow = MutableStateFlow("")
+
 
     private val baseQuickAdapter =
-        object : BaseQuickAdapter<Tip, BaseViewHolder>(R.layout.item_search_address_tip) {
-            override fun convert(helper: BaseViewHolder, item: Tip) {
+        object :
+            BaseQuickAdapter<Tip, BaseViewHolder>(R.layout.address_picker_item_search_address_tip) {
+            override fun convert(holder: BaseViewHolder, item: Tip) {
 
 
                 val name = item.name ?: ""
@@ -65,12 +75,12 @@ class SearchFragment : Fragment(), Inputtips.InputtipsListener {
                         index + currentSearchText.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                    helper.setText(R.id.name, spannableStringBuilder)
+                    holder.setText(R.id.name, spannableStringBuilder)
                 } else {
-                    helper.setText(R.id.name, name)
+                    holder.setText(R.id.name, name)
                 }
 
-                helper.setText(R.id.address, address)
+                holder.setText(R.id.address, address)
             }
 
         }
@@ -79,46 +89,63 @@ class SearchFragment : Fragment(), Inputtips.InputtipsListener {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
 
-        back.setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+        binding.back.setOnClickListener {
             activity?.onBackPressed()
         }
 
-        recycler_view.adapter = baseQuickAdapter
+        binding.recyclerView.adapter = baseQuickAdapter
 
-        address.textChanges().debounce(500, TimeUnit.MILLISECONDS)
-            .skip(1)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+//        binding.address.textChanges().debounce(500, TimeUnit.MILLISECONDS)
+//            .skip(1)
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe {
+//                onSearchTextChanged(it)
+//            }.addTo(compositeDisposable)
+
+        binding.address.doAfterTextChanged {
+            textStateFlow.value = it?.toString() ?: ""
+        }
+
+        lifecycleScope.launch {
+            textStateFlow
+                .debounce(1000)
+                .filter {
+                it.isNotEmpty()
+            }.collect {
                 onSearchTextChanged(it)
-            }.addTo(compositeDisposable)
+            }
+        }
 
         initLocationClient()
 
 
         baseQuickAdapter.setOnItemClickListener { _, _, position ->
-            val tip = baseQuickAdapter.getItem(position)!!
+            val tip = baseQuickAdapter.getItem(position)
             hideKeyboard()
 
             (activity as? HostActivity)?.showAddressLocationView(tip)
         }
     }
 
+
     override fun onResume() {
         super.onResume()
 
-        showSoftKeyboard(address)
+        showSoftKeyboard(binding.address)
     }
 
 
-    fun hideKeyboard() {
+    private fun hideKeyboard() {
         activity?.apply {
             val view = currentFocus
             if (view != null) {
@@ -177,18 +204,12 @@ class SearchFragment : Fragment(), Inputtips.InputtipsListener {
         inputTips.requestInputtipsAsyn()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        compositeDisposable.dispose()
-    }
-
 
     override fun onGetInputtips(list: MutableList<Tip>?, code: Int) {
         if (code == AMapException.CODE_AMAP_SUCCESS && list != null) {
-            baseQuickAdapter.setNewData(list.filter { it.point != null })
+            baseQuickAdapter.setList(list.filter { it.point != null })
         } else {
-            baseQuickAdapter.setNewData(null)
+            baseQuickAdapter.setList(null)
         }
     }
 }

@@ -1,11 +1,13 @@
 package com.ke.addresspicker.demo
 
 import android.os.Bundle
-import android.util.Log
+import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.ke.addresspicker.RxAddressPicker
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.lifecycle.lifecycleScope
+import com.amap.api.maps.MapsInitializer
+import com.ke.addresspicker.KeAddressPicker
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,15 +15,22 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        pick.setOnClickListener {
-            RxAddressPicker(this)
-                .pick().subscribe { address ->
-//                    Log.d("TAG", "address = $address")
-                    AlertDialog.Builder(this)
-                        .setMessage(address.toString())
+        MapsInitializer.updatePrivacyShow(application,true,true)
+        MapsInitializer.updatePrivacyAgree(application,true)
+
+
+        findViewById<Button>(R.id.pick)
+            .setOnClickListener {
+                lifecycleScope.launch {
+                    val result = KeAddressPicker(supportFragmentManager).pickAddress()
+
+                    AlertDialog.Builder(this@MainActivity)
+                        .setTitle("获取地址结果")
+                        .setMessage(result.toString())
+                        .setPositiveButton("确定",null)
                         .show()
                 }
-        }
+            }
 
 
     }

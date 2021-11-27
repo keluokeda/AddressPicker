@@ -11,7 +11,7 @@ import com.amap.api.services.help.Tip
 class HostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_host)
+        setContentView(R.layout.address_picker_activity_host)
         setStatusBarColor(resources.getColor(android.R.color.white))
 
         if (savedInstanceState == null) {
@@ -38,7 +38,6 @@ class HostActivity : AppCompatActivity() {
             }
         }
 
-//        activity?.window?.statusBarColor = color
 
 
     }
@@ -59,8 +58,8 @@ class HostActivity : AppCompatActivity() {
         ColorUtils.calculateLuminance(color) >= 0.5
 
     companion object {
-        const val key_latitude = "key_latitude"
-        const val key_longitude = "key_longitude"
-        const val key_address = "key_address"
+       internal const val key_latitude = "key_latitude"
+       internal const val key_longitude = "key_longitude"
+       internal const val key_address = "key_address"
     }
 }
