@@ -15,8 +15,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        MapsInitializer.updatePrivacyShow(application,true,true)
-        MapsInitializer.updatePrivacyAgree(application,true)
+        MapsInitializer.updatePrivacyShow(application, true, true)
+        MapsInitializer.updatePrivacyAgree(application, true)
 
 
         findViewById<Button>(R.id.pick)
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
                     AlertDialog.Builder(this@MainActivity)
                         .setTitle("获取地址结果")
                         .setMessage(result.toString())
-                        .setPositiveButton("确定",null)
+                        .setPositiveButton("确定", null)
                         .show()
                 }
             }

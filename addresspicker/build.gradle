@@ -80,7 +80,9 @@ dependencies {
 
 //    implementation 'com.amap.api:search:latest.integration'
     //implementation 'com.amap.api:location:latest.integration'
-    implementation 'com.amap.api:navi-3dmap:latest.integration'
+//    implementation 'com.amap.api:search:9.2.0'
+//    implementation 'com.amap.api:location:6.1.0'
+    implementation 'com.amap.api:navi-3dmap:9.3.0_3dmap9.3.0'
     implementation 'com.hi-dhl:binding:1.1.3'
 
 
