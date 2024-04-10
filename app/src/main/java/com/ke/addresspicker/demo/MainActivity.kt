@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
+
         MapsInitializer.updatePrivacyShow(application, true, true)
         MapsInitializer.updatePrivacyAgree(application, true)
 
